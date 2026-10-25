@@ -15,6 +15,7 @@ const PER_PAGE = 30;
 const state = {
   scope: "top",            // top | all
   labels: [...DEFAULT_LABELS],
+  age: 61,                 // max issue age in days (2 months); "" = any age
   language: "",
   sort: "created",
   q: "",
@@ -25,7 +26,7 @@ const state = {
 
 const $ = (sel) => document.querySelector(sel);
 const els = {
-  search: $("#search"), language: $("#language"), sort: $("#sort"),
+  search: $("#search"), language: $("#language"), sort: $("#sort"), age: $("#age"),
   results: $("#results"), banner: $("#banner"), metaRow: $("#meta-row"),
   resultCount: $("#result-count"), scopeNote: $("#scope-note"),
   empty: $("#empty-state"), loadMoreWrap: $("#load-more-wrap"),
@@ -103,11 +104,19 @@ async function gh(path, params) {
 
 class RateError extends Error {}
 
+/* ISO date (YYYY-MM-DD) N days ago, for the `created:>=` qualifier. */
+function createdSince(days) {
+  if (days === "" || days == null) return "";
+  return new Date(Date.now() - Number(days) * 86400000).toISOString().slice(0, 10);
+}
+
 /* ---------- query building (mirrors src/swecc_oss_explorer/query.py) ---------- */
 
 function issueQuery() {
   const parts = ["is:issue", "is:open"];
   for (const l of state.labels) parts.push(`label:"${l}"`);
+  const since = createdSince(state.age);
+  if (since) parts.push(`created:>=${since}`);
   if (state.language) parts.push(`language:${state.language}`);
   if (state.q) parts.push(state.q);
   return parts.join(" ");
@@ -243,6 +252,7 @@ async function runTopScopeSearch(seq) {
   const repos = await ensureTopRepos();
   if (seq !== searchSeq) return;
   const base = ["is:issue", "is:open", ...state.labels.map((l) => `label:"${l}"`),
+    createdSince(state.age) && `created:>=${createdSince(state.age)}`,
     state.language && `language:${state.language}`, state.q].filter(Boolean).join(" ");
   const chunks = chunkRepos(repos, 256 - base.length - 1);
 
@@ -299,6 +309,9 @@ function applyUrlParams() {
   const p = new URLSearchParams(location.search);
   if (["top", "all"].includes(p.get("scope"))) state.scope = p.get("scope");
   if (p.has("labels")) state.labels = p.get("labels").split(",").filter(Boolean);
+  if (["7", "14", "30", "61", "182", "365", ""].includes(p.get("age"))) {
+    state.age = p.get("age") === "" ? "" : Number(p.get("age"));
+  }
   if (p.get("lang")) state.language = p.get("lang");
   if (["created", "updated", "comments", "reactions"].includes(p.get("sort"))) state.sort = p.get("sort");
   if (p.get("q")) state.q = p.get("q");
@@ -308,6 +321,7 @@ function syncUrlParams() {
   const p = new URLSearchParams();
   if (state.scope !== "top") p.set("scope", state.scope);
   if (state.labels.join() !== DEFAULT_LABELS.join()) p.set("labels", state.labels.join(","));
+  if (String(state.age) !== "61") p.set("age", String(state.age));
   if (state.language) p.set("lang", state.language);
   if (state.sort !== "created") p.set("sort", state.sort);
   if (state.q) p.set("q", state.q);
@@ -332,6 +346,7 @@ function reflectState() {
     c.classList.toggle("active", c.dataset.scope === state.scope));
   document.querySelectorAll("#label-chips .chip").forEach((c) =>
     c.classList.toggle("active", state.labels.includes(c.dataset.label)));
+  els.age.value = String(state.age);
   els.language.value = state.language;
   els.sort.value = state.sort;
   els.search.value = state.q;
@@ -356,9 +371,13 @@ bindChips("#label-chips", "label", (chip) => {
 });
 
 els.language.addEventListener("change", () => { state.language = els.language.value; syncUrlParams(); runSearch(); });
+els.age.addEventListener("change", () => {
+  state.age = els.age.value === "" ? "" : Number(els.age.value);
+  syncUrlParams(); runSearch();
+});
 els.sort.addEventListener("change", () => { state.sort = els.sort.value; syncUrlParams(); runSearch(); });
 els.reset.addEventListener("click", () => {
-  Object.assign(state, { scope: "top", labels: [...DEFAULT_LABELS], language: "", sort: "created", q: "" });
+  Object.assign(state, { scope: "top", labels: [...DEFAULT_LABELS], age: 61, language: "", sort: "created", q: "" });
   reflectState(); syncUrlParams(); runSearch();
 });
 els.loadMore.addEventListener("click", () => { state.page += 1; runSearch({ resetPage: false }); });

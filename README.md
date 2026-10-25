@@ -37,6 +37,10 @@ pip install -e .
 # Open issues across the top 100 most active repos on GitHub (default)
 swecc-oss explore
 
+# Only issues created in the last week; or 'any' to disable the age filter
+swecc-oss explore --max-age 1w
+swecc-oss explore --max-age any
+
 # Python issues needing docs help in active projects, newest first
 swecc-oss explore --label documentation --language python
 
@@ -60,6 +64,9 @@ no npm install. Open `web/index.html` in a browser or serve it:
 ```bash
 python -m http.server 8000 --directory web
 ```
+
+A **Max age** filter (default: past 2 months) keeps results fresh; it's
+shareable in the URL via the `age` parameter (in days, or `age=` for any time).
 
 It deploys automatically to GitHub Pages via
 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)

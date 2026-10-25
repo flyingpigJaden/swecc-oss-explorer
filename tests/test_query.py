@@ -21,6 +21,19 @@ class TestBuildIssueQuery:
         q = build_issue_query(language="Python", text="pagination")
         assert "language:Python" in q and "pagination" in q
 
+    def test_created_since_qualifier(self):
+        q = build_issue_query(created_since="2026-08-24")
+        assert "created:>=2026-08-24" in q
+
+    def test_empty_created_since_is_omitted(self):
+        assert "created:" not in build_issue_query(created_since=None)
+        assert "created:" not in build_issue_query(created_since="")
+
+    def test_created_since_counts_toward_char_budget(self):
+        repos = [f"owner/repo-{i}" for i in range(50)]
+        with pytest.raises(ValueError):
+            build_issue_query(created_since="2026-08-24", repos=repos)
+
     def test_explicit_repos_are_included(self):
         q = build_issue_query(repos=["foo/bar"])
         assert "repo:foo/bar" in q

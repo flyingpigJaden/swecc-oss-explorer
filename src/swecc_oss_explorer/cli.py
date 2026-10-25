@@ -14,6 +14,7 @@ from .discovery import SCOPES, discover
 from .explore import search_issues_scoped
 from .github import GitHubClient, GitHubError, RateLimitError
 from .query import DEFAULT_LABELS, SORT_CHOICES
+from .timeutil import days_ago_iso, parse_age
 
 app = typer.Typer(
     name="swecc-oss",
@@ -69,6 +70,11 @@ def explore(
     text: str | None = typer.Option(
         None, "--query", "-q", help="Free-text query, e.g. 'pagination'."
     ),
+    max_age: str = typer.Option(
+        "2mo",
+        "--max-age",
+        help="Only issues created within this window: <N>d/w/mo/y (e.g. 30d, 2w, 3mo) or 'any'.",
+    ),
     sort: str = typer.Option(
         "created", "--sort", help=f"Sort order: {', '.join(SORT_CHOICES)}."
     ),
@@ -82,6 +88,13 @@ def explore(
     labels = list(label) if label else ([] if show_all else list(DEFAULT_LABELS))
     effective_repos = list(repo) if repo else None
 
+    try:
+        age_days = parse_age(max_age)
+    except ValueError as err:
+        console.print(f"[bold red]Error:[/bold red] {err}")
+        raise typer.Exit(2) from err
+    created_since = days_ago_iso(age_days) if age_days is not None else None
+
     client = GitHubClient()
     try:
         status = console.status("[bold blue]Searching GitHub…")
@@ -93,6 +106,7 @@ def explore(
             language=language,
             repos=effective_repos,
             text=text,
+            created_since=created_since,
             sort=sort,
             per_page=100,
             on_progress=lambda done, total: status.update(

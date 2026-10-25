@@ -58,21 +58,26 @@ def search_issues_scoped(
     language: str | None = None,
     repos: list[str] | None = None,
     text: str | None = None,
+    created_since: str | None = None,
     sort: str = "created",
     per_page: int = 50,
     on_progress: Callable[[int, int], None] | None = None,
 ) -> list[dict]:
     """Run the right search strategy for a scope and return merged, sorted issues."""
     if repos:
-        chunks = _chunk_for_query(repos, labels, language, text)
+        chunks = _chunk_for_query(repos, labels, language, text, created_since)
     elif scope == "top":
         discovered = discover(client, scope)
-        chunks = _chunk_for_query(sorted(repo_full_names(discovered)), labels, language, text)
+        chunks = _chunk_for_query(
+            sorted(repo_full_names(discovered)), labels, language, text, created_since
+        )
     else:
         chunks = None
 
     if chunks is None:
-        query = build_issue_query(scope=scope, labels=labels, language=language, text=text)
+        query = build_issue_query(
+            scope=scope, labels=labels, language=language, text=text, created_since=created_since
+        )
         return client.search_issues(query, sort=sort, per_page=per_page, max_pages=1)
 
     seen: set[int] = set()
@@ -86,6 +91,7 @@ def search_issues_scoped(
             language=language,
             repos=chunk,
             text=text,
+            created_since=created_since,
         )
         for issue in client.search_issues(query, sort=sort, per_page=per_page, max_pages=1):
             if issue.get("id") not in seen:
@@ -99,7 +105,10 @@ def _chunk_for_query(
     labels: list[str] | None,
     language: str | None,
     text: str | None,
+    created_since: str | None = None,
 ) -> list[list[str]]:
     """Chunk repos so that prefix + repo qualifiers fits GitHub's 256-char cap."""
-    base = build_issue_query(scope="all", labels=labels, language=language, text=text)
+    base = build_issue_query(
+        scope="all", labels=labels, language=language, text=text, created_since=created_since
+    )
     return chunk_repos(repos, char_budget=256 - len(base))

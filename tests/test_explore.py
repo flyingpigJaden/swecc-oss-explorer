@@ -37,6 +37,11 @@ class TestSearchIssuesScoped:
         assert len(client.session.calls) == 1
         assert "repo:" not in client.session.calls[0][1]["q"]
 
+    def test_created_since_is_passed_to_query(self):
+        client = make_client([("/search/issues", FakeResponse(200, self.EMPTY))])
+        search_issues_scoped(client, scope="all", created_since="2026-08-24")
+        assert "created:>=2026-08-24" in client.session.calls[0][1]["q"]
+
     def test_rejects_removed_swecc_scope(self):
         client = make_client([("/search/issues", FakeResponse(200, self.EMPTY))])
         with pytest.raises(ValueError):

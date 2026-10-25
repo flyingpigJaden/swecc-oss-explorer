@@ -25,6 +25,7 @@ def build_issue_query(
     language: str | None = None,
     repos: list[str] | None = None,
     text: str | None = None,
+    created_since: str | None = None,
     state: str = "open",
 ) -> str:
     """Compose a GitHub issue search query string (<= 256 chars)."""
@@ -35,6 +36,9 @@ def build_issue_query(
 
     for repo in repos or []:
         parts.append(f"repo:{repo}")
+
+    if created_since:
+        parts.append(f"created:>={created_since}")
 
     for label in labels or []:
         parts.append(f'label:"{label}"')
