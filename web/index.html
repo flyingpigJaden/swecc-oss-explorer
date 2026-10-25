@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWECC OSS Explorer — find your next contribution</title>
+  <meta name="description" content="A live, searchable browser of open issues across SWECC repos and the most active open-source projects on GitHub. Nothing stored — everything fetched fresh from the GitHub API." />
+  <link rel="preconnect" href="https://api.github.com" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark">🧭</span>
+        <span class="brand-text">
+          <strong>OSS Explorer</strong>
+          <span class="brand-sub">by SWECC Labs</span>
+        </span>
+      </a>
+      <div class="header-actions">
+        <span id="rate-indicator" class="rate-indicator" title="GitHub search API budget remaining this minute">•</span>
+        <button id="token-btn" class="btn btn-ghost" type="button" title="Optional: raise your rate limit with a personal access token">🔑 Token</button>
+        <a class="btn btn-ghost" href="https://github.com/swecc-uw/swecc-oss-explorer" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Find your next <span class="accent">open-source</span> contribution.</h1>
+      <p class="hero-sub">
+        Live issues from <strong>SWECC's repos</strong> and the <strong>100 most active projects on GitHub</strong>.
+        No database, no staleness — everything is fetched fresh from the GitHub API when you search.
+      </p>
+
+      <div class="searchbar" role="search">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Search issues… e.g. pagination, dark mode, refactor"
+               autocomplete="off" spellcheck="false" aria-label="Search issues" />
+        <kbd class="search-hint">/</kbd>
+      </div>
+
+      <div class="controls">
+        <div class="control-group" role="group" aria-label="Repository scope">
+          <span class="control-label">Scope</span>
+          <div class="chips" id="scope-chips">
+            <button class="chip chip-scope" data-scope="swecc" type="button">SWECC</button>
+            <button class="chip chip-scope" data-scope="top" type="button">Top 100 active</button>
+            <button class="chip chip-scope" data-scope="all" type="button">All of GitHub</button>
+          </div>
+        </div>
+
+        <div class="control-group" role="group" aria-label="Labels">
+          <span class="control-label">Labels</span>
+          <div class="chips" id="label-chips">
+            <button class="chip chip-label" data-label="good first issue" type="button">good first issue</button>
+            <button class="chip chip-label" data-label="help wanted" type="button">help wanted</button>
+            <button class="chip chip-label" data-label="bug" type="button">bug</button>
+            <button class="chip chip-label" data-label="documentation" type="button">documentation</button>
+            <button class="chip chip-label" data-label="enhancement" type="button">enhancement</button>
+          </div>
+        </div>
+
+        <div class="control-group selects">
+          <span class="control-label">Filters</span>
+          <select id="language" aria-label="Language">
+            <option value="">Any language</option>
+            <option>Python</option><option>JavaScript</option><option>TypeScript</option>
+            <option>Go</option><option>Rust</option><option>Java</option>
+            <option>C++</option><option>C</option><option>Swift</option><option>Kotlin</option>
+          </select>
+          <select id="sort" aria-label="Sort order">
+            <option value="created">Newest</option>
+            <option value="updated">Recently updated</option>
+            <option value="comments">Most discussed</option>
+            <option value="reactions">Most 👍</option>
+          </select>
+          <button id="reset-btn" class="btn btn-ghost" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <div id="banner" class="banner hidden" role="alert"></div>
+
+    <div id="meta-row" class="meta-row hidden">
+      <span id="result-count"></span>
+      <span id="scope-note" class="dim"></span>
+    </div>
+
+    <section id="results" class="grid" aria-live="polite"></section>
+
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-emoji">🔍</div>
+      <h2>No issues matched</h2>
+      <p>Try removing a label, widening the scope, or clearing your search text.</p>
+    </div>
+
+    <div id="load-more-wrap" class="load-more hidden">
+      <button id="load-more" class="btn btn-primary" type="button">Load more</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>
+        Built by <a href="https://swecc.org" target="_blank" rel="noopener">SWECC</a> ·
+        <a href="https://github.com/swecc-uw/swecc-oss-explorer/issues" target="_blank" rel="noopener">found a bug or want a feature?</a>
+      </p>
+      <p class="dim">Data © GitHub, fetched live via the REST API. Rate limits: 10 searches/min unauthenticated, 30/min with a token.</p>
+    </div>
+  </footer>
+
+  <dialog id="token-dialog">
+    <form method="dialog" id="token-form">
+      <h2>Personal access token <span class="dim">(optional)</span></h2>
+      <p class="dim">
+        GitHub allows 10 searches/minute without a token and 30/minute with one.
+        A token with <strong>no scopes</strong> (public access only) is enough.
+        It is kept in your browser's localStorage and sent only to api.github.com — this site has no backend and stores nothing.
+      </p>
+      <input id="token-input" type="password" placeholder="ghp_… (leave blank to remove)" autocomplete="off" />
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" value="cancel" type="submit">Cancel</button>
+        <button class="btn btn-primary" value="save" type="submit" id="token-save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
