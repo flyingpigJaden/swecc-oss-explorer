@@ -78,7 +78,7 @@ Both surfaces build queries the same way — see [`src/swecc_oss_explorer/query.
   website streams batches in as they arrive, so results appear progressively.
 
 Both steps are live on every request. The activity heuristic is deliberately
-simple and tracked in [#3](https://github.com/swecc-uw/swecc-oss-explorer/issues/3).
+simple and tracked in [#7](https://github.com/swecc-uw/swecc-oss-explorer/issues/7).
 
 ## Project structure
 
