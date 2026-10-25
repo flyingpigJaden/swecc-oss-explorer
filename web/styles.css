@@ -25,7 +25,6 @@
   --accent: #d5c6f8;
   --danger: #d96b6b;
   --warn: #ffbd2e;   /* tokens.windowMinimize, reused for warnings */
-  --ok: #27c93f;     /* tokens.windowMaximize, reused for OK status */
 
   --border: #43454a;
   --hairline: rgb(250 250 250 / 0.1);
@@ -118,15 +117,6 @@ a:hover { opacity: 0.7; transition: 0.2s; }
 }
 
 .header-actions { display: flex; align-items: center; gap: 8px; }
-
-.rate-indicator {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 6px var(--ok);
-  display: inline-block;
-}
-.rate-indicator.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
-.rate-indicator.bad { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
 
 /* ---------- buttons — mirrors swecc-ui Button.tsx ---------- */
 

@@ -45,7 +45,7 @@ const els = {
   results: $("#results"), banner: $("#banner"), metaRow: $("#meta-row"),
   resultCount: $("#result-count"), scopeNote: $("#scope-note"),
   empty: $("#empty-state"), loadMoreWrap: $("#load-more-wrap"),
-  loadMore: $("#load-more"), rate: $("#rate-indicator"),
+  loadMore: $("#load-more"),
   tokenBtn: $("#token-btn"), tokenDialog: $("#token-dialog"),
   tokenInput: $("#token-input"), tokenForm: $("#token-form"),
   reset: $("#reset-btn"),
@@ -233,8 +233,6 @@ async function runSearch({ resetPage = true } = {}) {
     if (seq !== searchSeq) return;
     if (err instanceof RateError) showBanner(`GitHub search rate limit hit. ${err.message}`);
     else showBanner(`${escapeHtml(err.message)} — check your connection and try again.`, true);
-  } finally {
-    if (seq === searchSeq) refreshRateIndicator();
   }
 }
 
@@ -302,20 +300,6 @@ function updateMeta(count, resetPage) {
 function updateBatchProgress(done, total) {
   els.resultCount.textContent = `searching batch ${done + 1}/${total}…`;
   els.metaRow.classList.remove("hidden");
-}
-
-/* ---------- rate-limit indicator ---------- */
-
-async function refreshRateIndicator() {
-  try {
-    const res = await fetch(`${API}/rate_limit`, {
-      headers: state.token ? { Authorization: `Bearer ${state.token}` } : {},
-    });
-    const data = await res.json();
-    const { remaining, limit } = data.resources.search;
-    els.rate.title = `Search API budget: ${remaining}/${limit} this minute`;
-    els.rate.className = `rate-indicator ${remaining <= 2 ? "bad" : remaining <= limit / 3 ? "warn" : ""}`;
-  } catch { /* indicator is best-effort */ }
 }
 
 /* ---------- URL <-> state sync (shareable filters) ---------- */
@@ -413,7 +397,6 @@ els.tokenForm.addEventListener("submit", (e) => {
     if (state.token) localStorage.setItem("gh_token", state.token);
     else localStorage.removeItem("gh_token");
     updateTokenButton();
-    refreshRateIndicator();
     runSearch();
   }
 });
@@ -433,5 +416,3 @@ document.addEventListener("click", (e) => {
 applyUrlParams();
 reflectState();
 runSearch();
-refreshRateIndicator();
-setInterval(refreshRateIndicator, 30000);
