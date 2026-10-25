@@ -133,7 +133,7 @@ def explore(
     table.add_column("Title", max_width=60)
     table.add_column("Labels", style="yellow", max_width=28)
     table.add_column("Age", justify="right", style="dim")
-    table.add_column("💬", justify="right")
+    table.add_column("Comments", justify="right")
 
     for issue in issues:
         repo_name = issue.get("repository_url", "").removeprefix("https://api.github.com/repos/")
@@ -173,7 +173,7 @@ def repos(
 
     table = Table(title=f"{scope} scope — {len(discovered)} repos", header_style="bold magenta")
     table.add_column("Repo", style="cyan")
-    table.add_column("⭐", justify="right")
+    table.add_column("Stars", justify="right")
     table.add_column("Language", style="green")
     table.add_column("Description", max_width=60)
     for r in discovered:

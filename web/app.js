@@ -25,6 +25,21 @@ const state = {
 };
 
 const $ = (sel) => document.querySelector(sel);
+
+/* Inline SVG icons (feather-style, stroke = currentColor). */
+const ICONS = {
+  comment:
+    '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+  user:
+    '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  external:
+    '<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  alert:
+    '<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  clock:
+    '<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+};
+
 const els = {
   search: $("#search"), language: $("#language"), sort: $("#sort"), age: $("#age"),
   results: $("#results"), banner: $("#banner"), metaRow: $("#meta-row"),
@@ -94,8 +109,7 @@ async function gh(path, params) {
     const reset = res.headers.get("x-ratelimit-reset");
     const mins = reset ? Math.max(1, Math.ceil((reset * 1000 - Date.now()) / 60000)) : 1;
     throw new RateError(
-      `GitHub search rate limit hit. Try again in ~${mins} min, ` +
-      `or <a href="#" id="open-token">add a token</a> for 30/min.`
+      `Try again in ~${mins} min, or <a href="#" id="open-token">add a token</a> for 30/min.`
     );
   }
   if (!res.ok) throw new Error(`GitHub API ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -153,11 +167,11 @@ function render(issues, { appended = false } = {}) {
         ${excerptHtml}
         <div class="labels">${labels}</div>
         <div class="card-footer">
-          <span title="Opened ${escapeHtml(it.created_at)}">${age(it.created_at)}</span>
-          <span title="Comments">💬 ${it.comments ?? 0}</span>
-          <span title="Author">👤 ${escapeHtml(it.user?.login || "ghost")}</span>
+          <span class="meta-item" title="Opened ${escapeHtml(it.created_at)}">${age(it.created_at)}</span>
+          <span class="meta-item" title="Comments">${ICONS.comment} ${it.comments ?? 0}</span>
+          <span class="meta-item" title="Author">${ICONS.user} ${escapeHtml(it.user?.login || "ghost")}</span>
           <span class="spacer"></span>
-          <a href="${it.html_url}" target="_blank" rel="noopener">Open ↗</a>
+          <a href="${it.html_url}" target="_blank" rel="noopener" class="card-link">${ICONS.external} Open</a>
         </div>
       </article>`;
   }).join("");
@@ -167,7 +181,8 @@ function render(issues, { appended = false } = {}) {
 }
 
 function showBanner(html, isError = false) {
-  els.banner.innerHTML = html;
+  const icon = isError ? ICONS.alert : ICONS.clock;
+  els.banner.innerHTML = `${icon}<span class="banner-text">${html}</span>`;
   els.banner.classList.toggle("error", isError);
   els.banner.classList.remove("hidden");
 }
@@ -216,8 +231,8 @@ async function runSearch({ resetPage = true } = {}) {
     }
   } catch (err) {
     if (seq !== searchSeq) return;
-    if (err instanceof RateError) showBanner(`⏳ ${err.message}`);
-    else showBanner(`⚠️ ${escapeHtml(err.message)} — check your connection and try again.`, true);
+    if (err instanceof RateError) showBanner(`GitHub search rate limit hit. ${err.message}`);
+    else showBanner(`${escapeHtml(err.message)} — check your connection and try again.`, true);
   } finally {
     if (seq === searchSeq) refreshRateIndicator();
   }
@@ -397,12 +412,17 @@ els.tokenForm.addEventListener("submit", (e) => {
     state.token = els.tokenInput.value.trim();
     if (state.token) localStorage.setItem("gh_token", state.token);
     else localStorage.removeItem("gh_token");
-    els.tokenBtn.textContent = state.token ? "🔑 Token ✓" : "🔑 Token";
+    updateTokenButton();
     refreshRateIndicator();
     runSearch();
   }
 });
-if (state.token) els.tokenBtn.textContent = "🔑 Token ✓";
+updateTokenButton();
+
+function updateTokenButton() {
+  $("#token-label").textContent = state.token ? "Token set" : "Token";
+  els.tokenBtn.classList.toggle("btn-outline", Boolean(state.token));
+}
 
 document.addEventListener("click", (e) => {
   if (e.target.id === "open-token") { e.preventDefault(); els.tokenBtn.click(); }
