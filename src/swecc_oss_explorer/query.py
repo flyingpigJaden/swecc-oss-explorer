@@ -1,18 +1,17 @@
 """Query building for GitHub issue search.
 
 Constraint that shapes everything: GitHub's search API rejects queries longer
-than 256 characters, so we can't OR together 100 ``repo:`` qualifiers in one
-call. Instead:
+than 256 characters, so a scope covering ~100 repos can't OR together all its
+``repo:`` qualifiers in one call. Instead (see ``explore.py``):
 
-* ``swecc`` scope   -> ``org:swecc-uw`` qualifier (one cheap query, full coverage)
-* ``top`` scope     -> one global issue search, then client-side filtering
-                       against the top-100 repo set
-* ``all`` scope     -> one global issue search, no filtering
+* ``top`` scope — repo batches are packed greedily under the char budget and
+  searched one query per batch
+* ``all`` scope — one global issue search, no filtering
 """
 
 from __future__ import annotations
 
-from .discovery import SCOPES, SWECC_ORG
+SCOPES = ("top", "all")
 
 DEFAULT_LABELS = ["good first issue", "help wanted"]
 
@@ -34,8 +33,6 @@ def build_issue_query(
 
     parts = ["is:issue", f"is:{state}"]
 
-    if scope == "swecc":
-        parts.append(f"org:{SWECC_ORG}")
     for repo in repos or []:
         parts.append(f"repo:{repo}")
 
@@ -53,16 +50,3 @@ def build_issue_query(
             "reduce the number of repos/labels in one query"
         )
     return query
-
-
-def filter_by_repos(items: list[dict], allowed_full_names: set[str]) -> list[dict]:
-    """Keep only issues whose repository is in the allowed set (for the ``top`` scope)."""
-    if not allowed_full_names:
-        return items
-
-    def repo_name(item: dict) -> str:
-        # repository_url looks like https://api.github.com/repos/{owner}/{repo}
-        url = item.get("repository_url", "")
-        return url.removeprefix("https://api.github.com/repos/")
-
-    return [i for i in items if repo_name(i) in allowed_full_names]

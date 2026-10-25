@@ -13,7 +13,7 @@ const DEFAULT_LABELS = ["good first issue", "help wanted"];
 const PER_PAGE = 30;
 
 const state = {
-  scope: "swecc",          // swecc | top | all
+  scope: "top",            // top | all
   labels: [...DEFAULT_LABELS],
   language: "",
   sort: "created",
@@ -56,8 +56,9 @@ function repoOf(item) {
 }
 
 // Deterministic avatar color + initial per repo (no extra API calls needed).
+// Palette = @swecc/ui token colors (see styles.css).
 function avatarFor(fullName) {
-  const colors = ["#238636", "#1f6feb", "#8957e5", "#bf3989", "#d29922", "#da3633", "#1b7f83", "#9e6a03"];
+  const colors = ["#7ea266", "#d5c6f8", "#d96b6b", "#ffbd2e", "#484a4d", "#27c93f", "#a7aab1", "#d7d4d0"];
   let hash = 0;
   for (const ch of fullName) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   const initial = fullName.replace(/.*\//, "")[0] || "?";
@@ -106,7 +107,6 @@ class RateError extends Error {}
 
 function issueQuery() {
   const parts = ["is:issue", "is:open"];
-  if (state.scope === "swecc") parts.push("org:swecc-uw");
   for (const l of state.labels) parts.push(`label:"${l}"`);
   if (state.language) parts.push(`language:${state.language}`);
   if (state.q) parts.push(state.q);
@@ -214,7 +214,7 @@ async function runSearch({ resetPage = true } = {}) {
   }
 }
 
-/* Single-query scopes: "swecc" (org qualifier) and "all" (global). Paginated. */
+/* Single-query scope: "all" (global). Paginated. */
 async function runSingleQuerySearch(seq, { resetPage }) {
   const data = await gh("/search/issues", {
     q: issueQuery(),
@@ -227,7 +227,7 @@ async function runSingleQuerySearch(seq, { resetPage }) {
   lastTotal = Math.min(data.total_count, 1000); // GitHub caps search results at 1000
 
   const issues = data.items || [];
-  els.scopeNote.textContent = state.scope === "swecc" ? "all SWECC repos, live" : "every public repo on GitHub";
+  els.scopeNote.textContent = "every public repo on GitHub";
   updateMeta(issues.length, resetPage);
 
   if (issues.length) render(issues, { appended: !resetPage });
@@ -297,7 +297,7 @@ async function refreshRateIndicator() {
 
 function applyUrlParams() {
   const p = new URLSearchParams(location.search);
-  if (["swecc", "top", "all"].includes(p.get("scope"))) state.scope = p.get("scope");
+  if (["top", "all"].includes(p.get("scope"))) state.scope = p.get("scope");
   if (p.has("labels")) state.labels = p.get("labels").split(",").filter(Boolean);
   if (p.get("lang")) state.language = p.get("lang");
   if (["created", "updated", "comments", "reactions"].includes(p.get("sort"))) state.sort = p.get("sort");
@@ -306,7 +306,7 @@ function applyUrlParams() {
 
 function syncUrlParams() {
   const p = new URLSearchParams();
-  if (state.scope !== "swecc") p.set("scope", state.scope);
+  if (state.scope !== "top") p.set("scope", state.scope);
   if (state.labels.join() !== DEFAULT_LABELS.join()) p.set("labels", state.labels.join(","));
   if (state.language) p.set("lang", state.language);
   if (state.sort !== "created") p.set("sort", state.sort);
@@ -358,7 +358,7 @@ bindChips("#label-chips", "label", (chip) => {
 els.language.addEventListener("change", () => { state.language = els.language.value; syncUrlParams(); runSearch(); });
 els.sort.addEventListener("change", () => { state.sort = els.sort.value; syncUrlParams(); runSearch(); });
 els.reset.addEventListener("click", () => {
-  Object.assign(state, { scope: "swecc", labels: [...DEFAULT_LABELS], language: "", sort: "created", q: "" });
+  Object.assign(state, { scope: "top", labels: [...DEFAULT_LABELS], language: "", sort: "created", q: "" });
   reflectState(); syncUrlParams(); runSearch();
 });
 els.loadMore.addEventListener("click", () => { state.page += 1; runSearch({ resetPage: false }); });

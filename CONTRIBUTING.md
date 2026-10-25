@@ -26,6 +26,10 @@ pip install -e . pytest ruff
 - **Website**: no build step, no framework, no npm. Vanilla HTML/CSS/JS in
   `web/`. Keep it that way unless an issue says otherwise — it's what makes the
   project approachable.
+- **Theming**: `web/styles.css` mirrors the design tokens and component styles
+  from [`@swecc/ui`](https://github.com/swecc-uw/swecc-ui) (`src/tokens.stylex.ts`,
+  `Button.tsx`, `Pill.tsx`). If you change the look, change it there first or
+  keep the two in sync.
 - **Design rule**: everything is fetched live from the GitHub API. Never add
   persistence (databases, server-side caches, scheduled crawlers) without
   discussing it in an issue first.

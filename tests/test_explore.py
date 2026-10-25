@@ -37,10 +37,10 @@ class TestSearchIssuesScoped:
         assert len(client.session.calls) == 1
         assert "repo:" not in client.session.calls[0][1]["q"]
 
-    def test_swecc_scope_single_org_query(self):
+    def test_rejects_removed_swecc_scope(self):
         client = make_client([("/search/issues", FakeResponse(200, self.EMPTY))])
-        search_issues_scoped(client, scope="swecc")
-        assert "org:swecc-uw" in client.session.calls[0][1]["q"]
+        with pytest.raises(ValueError):
+            search_issues_scoped(client, scope="swecc")
 
     def test_top_scope_issues_chunked_and_merged(self):
         # Discovery returns 3 repos -> 1 chunk; each search returns one issue.

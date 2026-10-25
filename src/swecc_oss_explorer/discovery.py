@@ -1,12 +1,11 @@
 """Repo discovery: which repos should the explorer scan?
 
-Two scopes, both resolved live on every run (nothing is cached to disk):
+Everything is resolved live on every run (nothing is cached to disk):
 
-* ``swecc``   — every public repo in the SWECC GitHub org.
-* ``top``     — the top N most active open-source repos, approximated with a
-                single search query: many stars + pushed recently, sorted by
-                stars. This is a deliberately simple heuristic; improving it
-                is tracked in the repo's issue tracker.
+* ``top`` — the top N most active open-source repos, approximated with a
+  single search query: many stars + pushed recently, sorted by stars. This is
+  a deliberately simple heuristic; improving it is tracked in the repo's
+  issue tracker.
 """
 
 from __future__ import annotations
@@ -15,24 +14,11 @@ from datetime import datetime, timedelta, timezone
 
 from .github import GitHubClient
 
-SWECC_ORG = "swecc-uw"
-
 # Heuristic knobs for "most active". Tuned to keep it to ONE search call.
 TOP_REPO_MIN_STARS = 5_000
 TOP_REPO_PUSHED_WITHIN_DAYS = 30
 
-SCOPES = ("swecc", "top", "all")
-
-
-def swecc_repos(client: GitHubClient) -> list[dict]:
-    """All public, non-archived repos under the SWECC org."""
-    repos = [
-        r
-        for r in client.org_repos(SWECC_ORG)
-        if not r.get("archived") and not r.get("disabled")
-    ]
-    repos.sort(key=lambda r: r.get("stargazers_count", 0), reverse=True)
-    return repos
+SCOPES = ("top", "all")
 
 
 def top_active_repos(client: GitHubClient, limit: int = 100) -> list[dict]:
@@ -52,8 +38,6 @@ def top_active_repos(client: GitHubClient, limit: int = 100) -> list[dict]:
 
 def discover(client: GitHubClient, scope: str, limit: int = 100) -> list[dict]:
     """Return the repo set for a scope. ``all`` returns [] (no repo filter)."""
-    if scope == "swecc":
-        return swecc_repos(client)
     if scope == "top":
         return top_active_repos(client, limit=limit)
     return []

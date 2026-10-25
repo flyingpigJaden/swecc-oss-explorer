@@ -2,7 +2,7 @@
 
 import pytest
 
-from swecc_oss_explorer.discovery import discover, repo_full_names, swecc_repos, top_active_repos
+from swecc_oss_explorer.discovery import discover, repo_full_names, top_active_repos
 from swecc_oss_explorer.github import GitHubClient, GitHubError, RateLimitError
 
 
@@ -67,19 +67,6 @@ def test_token_from_argument_sets_auth_header():
 
 
 # ---------- discovery ----------
-
-def test_swecc_repos_excludes_archived_and_sorts_by_stars():
-    client = make_client([(
-        "/orgs/swecc-uw/repos",
-        FakeResponse(200, [
-            {"full_name": "swecc-uw/a", "stargazers_count": 3, "archived": False},
-            {"full_name": "swecc-uw/b", "stargazers_count": 9, "archived": False},
-            {"full_name": "swecc-uw/old", "stargazers_count": 50, "archived": True},
-        ]),
-    )])
-    names = [r["full_name"] for r in swecc_repos(client)]
-    assert names == ["swecc-uw/b", "swecc-uw/a"]
-
 
 def test_top_active_repos_uses_pushed_recently_query():
     payload = {"items": [], "total_count": 0}

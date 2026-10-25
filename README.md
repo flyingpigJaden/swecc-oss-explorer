@@ -1,8 +1,8 @@
 # 🧭 SWECC OSS Explorer
 
 A **SWECC Labs** project: a polished, searchable browser for open issues across
-**SWECC's own repos** and the **~100 most active open-source projects on GitHub** —
-available as a Python CLI and a web app.
+the **~100 most active open-source projects on GitHub** — available as a
+Python CLI and a web app.
 
 Think "good first issue" aggregator, but with actual UX.
 
@@ -19,6 +19,10 @@ localStorage** — never on a server.
 | CLI | `swecc-oss` — search issues from your terminal | `src/swecc_oss_explorer/` |
 | Website | filterable, shareable issue browser | `web/` (static, zero build step) |
 
+The website is themed with the [SWECC design system](https://github.com/swecc-uw/swecc-ui):
+its tokens and component styles are ported by hand into `web/styles.css` because
+`@swecc/ui` is a React + StyleX library and this site intentionally has no build step.
+
 ## Quickstart (CLI)
 
 Requires Python 3.10+.
@@ -30,14 +34,11 @@ pip install -e .
 ```
 
 ```bash
-# Open issues across all SWECC repos (default labels: good first issue, help wanted)
+# Open issues across the top 100 most active repos on GitHub (default)
 swecc-oss explore
 
-# The same, but across the top 100 most active repos on GitHub
-swecc-oss explore --scope top
-
 # Python issues needing docs help in active projects, newest first
-swecc-oss explore --scope top --label documentation --language python
+swecc-oss explore --label documentation --language python
 
 # Free text search, JSON output for scripting
 swecc-oss explore --scope all --query "pagination" --json
@@ -68,7 +69,6 @@ It deploys automatically to GitHub Pages via
 
 Both surfaces build queries the same way — see [`src/swecc_oss_explorer/query.py`](src/swecc_oss_explorer/query.py):
 
-- **`swecc` scope** — one search with `org:swecc-uw`: every SWECC repo, full coverage.
 - **`top` scope** — GitHub caps search queries at 256 characters, so OR-ing 100
   `repo:` qualifiers in one query isn't possible. Instead we (1) discover the
   top repos with a single stars + recency heuristic
@@ -76,6 +76,7 @@ Both surfaces build queries the same way — see [`src/swecc_oss_explorer/query.
   them into `repo:`-qualifier batches that each fit the 256-char budget, and
   (3) run one live search per batch, merging and re-sorting the results. The
   website streams batches in as they arrive, so results appear progressively.
+- **`all` scope** — one global issue search, no repo filtering.
 
 Both steps are live on every request. The activity heuristic is deliberately
 simple and tracked in [#7](https://github.com/swecc-uw/swecc-oss-explorer/issues/7).
@@ -86,13 +87,13 @@ simple and tracked in [#7](https://github.com/swecc-uw/swecc-oss-explorer/issues
 src/swecc_oss_explorer/
 ├── cli.py         # typer commands: explore, repos, web, version
 ├── github.py      # minimal stateless GitHub REST client
-├── discovery.py   # SWECC repos + top-100-active heuristic
+├── discovery.py   # top-100-active heuristic
 ├── query.py       # query building (256-char budget, scoping rules)
 └── explore.py     # chunked multi-repo search orchestration
 web/
 ├── index.html     # single-page app shell
 ├── app.js         # live search, filters, URL sync, progressive batch search
-└── styles.css     # dark GitHub-inspired theme
+└── styles.css     # @swecc/ui design tokens, ported to vanilla CSS
 ```
 
 ## Contributing

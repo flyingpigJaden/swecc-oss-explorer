@@ -48,10 +48,10 @@ def _labels(issue: dict) -> str:
 @app.command()
 def explore(
     scope: str = typer.Option(
-        "swecc",
+        "top",
         "--scope",
         "-s",
-        help="Repo scope to search: swecc, top (top 100 active), or all.",
+        help="Repo scope to search: top (top 100 active) or all.",
         callback=lambda v: v if v in SCOPES else typer.BadParameter(f"must be one of {SCOPES}"),
     ),
     label: list[str] = typer.Option(
@@ -138,7 +138,7 @@ def explore(
 @app.command()
 def repos(
     scope: str = typer.Option(
-        "swecc", "--scope", "-s", help="Which repos to list: swecc, top, or all.",
+        "top", "--scope", "-s", help="Which repos to list: top or all.",
         callback=lambda v: v if v in SCOPES else typer.BadParameter(f"must be one of {SCOPES}"),
     ),
     limit: int = typer.Option(100, "--limit", "-n", min=1, max=1000),

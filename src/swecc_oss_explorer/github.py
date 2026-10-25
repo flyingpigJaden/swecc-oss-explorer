@@ -99,19 +99,6 @@ class GitHubClient:
                 break
         return repos
 
-    def org_repos(self, org: str, *, per_page: int = 100) -> list[dict[str, Any]]:
-        """List all public repos for an organization (live, paginated)."""
-        repos: list[dict[str, Any]] = []
-        page = 1
-        while True:
-            data = self._get(f"/orgs/{org}/repos", {"per_page": per_page, "page": page})
-            batch = data if isinstance(data, list) else []
-            repos.extend(batch)
-            if len(batch) < per_page:
-                break
-            page += 1
-        return repos
-
     def rate_limit_remaining(self) -> int:
         """Remaining search-API requests this minute (for status displays)."""
         data = self._get("/rate_limit")

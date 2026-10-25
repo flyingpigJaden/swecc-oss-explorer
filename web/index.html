@@ -6,6 +6,13 @@
   <title>SWECC OSS Explorer — find your next contribution</title>
   <meta name="description" content="A live, searchable browser of open issues across SWECC repos and the most active open-source projects on GitHub. Nothing stored — everything fetched fresh from the GitHub API." />
   <link rel="preconnect" href="https://api.github.com" />
+  <!-- Fonts from the @swecc/ui token set (see styles.css header comment). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@700;800&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
 </head>
@@ -31,7 +38,7 @@
     <div class="container">
       <h1>Find your next <span class="accent">open-source</span> contribution.</h1>
       <p class="hero-sub">
-        Live issues from <strong>SWECC's repos</strong> and the <strong>100 most active projects on GitHub</strong>.
+        Live issues from the <strong>100 most active projects on GitHub</strong>.
         No database, no staleness — everything is fetched fresh from the GitHub API when you search.
       </p>
 
@@ -46,7 +53,6 @@
         <div class="control-group" role="group" aria-label="Repository scope">
           <span class="control-label">Scope</span>
           <div class="chips" id="scope-chips">
-            <button class="chip chip-scope" data-scope="swecc" type="button">SWECC</button>
             <button class="chip chip-scope" data-scope="top" type="button">Top 100 active</button>
             <button class="chip chip-scope" data-scope="all" type="button">All of GitHub</button>
           </div>

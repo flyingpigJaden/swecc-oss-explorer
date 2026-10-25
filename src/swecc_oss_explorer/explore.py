@@ -3,7 +3,6 @@
 Because GitHub's search API rejects queries over 256 characters, a scope
 covering many repos can't be expressed as one query. Strategy per scope:
 
-* ``swecc``  — one query with ``org:swecc-uw`` (cheap, full coverage).
 * ``top``    — discover the top active repos, pack them greedily into chunks of
                ``repo:`` qualifiers that each fit the 256-char budget, run one
                search per chunk, and merge the results.
@@ -66,8 +65,6 @@ def search_issues_scoped(
     """Run the right search strategy for a scope and return merged, sorted issues."""
     if repos:
         chunks = _chunk_for_query(repos, labels, language, text)
-    elif scope == "swecc":
-        chunks = None  # single org query below
     elif scope == "top":
         discovered = discover(client, scope)
         chunks = _chunk_for_query(sorted(repo_full_names(discovered)), labels, language, text)
