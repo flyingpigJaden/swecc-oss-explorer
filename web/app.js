@@ -379,6 +379,26 @@ els.reset.addEventListener("click", () => {
   Object.assign(state, { scope: "top", labels: [...DEFAULT_LABELS], age: 61, language: "", sort: "created", q: "" });
   reflectState(); syncUrlParams(); runSearch();
 });
+
+/* ---------- mobile hamburger menu ---------- */
+
+function setMenu(open) {
+  document.body.classList.toggle("menu-open", open);
+  menuBtn.setAttribute("aria-expanded", String(open));
+}
+
+const menuBtn = $("#menu-btn");
+menuBtn.addEventListener("click", () => {
+  setMenu(!document.body.classList.contains("menu-open"));
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") setMenu(false);
+});
+document.addEventListener("click", (e) => {
+  if (document.body.classList.contains("menu-open") && !e.target.closest(".site-header")) {
+    setMenu(false);
+  }
+});
 els.loadMore.addEventListener("click", () => { state.page += 1; runSearch({ resetPage: false }); });
 
 document.addEventListener("keydown", (e) => {

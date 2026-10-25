@@ -33,10 +33,69 @@
         </button>
         <a class="btn btn-ghost" href="https://github.com/swecc-uw/swecc-oss-explorer" target="_blank" rel="noopener">
           <svg class="icon" width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-          GitHub
+          <span class="github-text">GitHub</span>
         </a>
+        <button id="menu-btn" class="btn btn-ghost menu-btn" type="button"
+                aria-expanded="false" aria-controls="controls-panel" aria-label="Toggle filters menu">
+          <svg class="icon icon-menu" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg class="icon icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
     </div>
+
+    <nav id="controls-panel" class="controls-panel" aria-label="Search filters">
+      <div class="container">
+        <div class="controls">
+          <div class="control-group" role="group" aria-label="Repository scope">
+            <span class="control-label">Scope</span>
+            <div class="chips" id="scope-chips">
+              <button class="chip chip-scope" data-scope="top" type="button">Top 100 active</button>
+              <button class="chip chip-scope" data-scope="all" type="button">All of GitHub</button>
+            </div>
+          </div>
+
+          <div class="control-group" role="group" aria-label="Labels">
+            <span class="control-label">Labels</span>
+            <div class="chips" id="label-chips">
+              <button class="chip chip-label" data-label="good first issue" type="button">good first issue</button>
+              <button class="chip chip-label" data-label="help wanted" type="button">help wanted</button>
+              <button class="chip chip-label" data-label="bug" type="button">bug</button>
+              <button class="chip chip-label" data-label="documentation" type="button">documentation</button>
+              <button class="chip chip-label" data-label="enhancement" type="button">enhancement</button>
+            </div>
+          </div>
+
+          <div class="control-group selects">
+            <span class="control-label">Filters</span>
+            <select id="age" aria-label="Maximum issue age" title="Only show issues created within this window">
+              <option value="7">Past week</option>
+              <option value="14">Past 2 weeks</option>
+              <option value="30">Past month</option>
+              <option value="61">Past 2 months</option>
+              <option value="182">Past 6 months</option>
+              <option value="365">Past year</option>
+              <option value="">Any time</option>
+            </select>
+            <select id="language" aria-label="Language">
+              <option value="">Any language</option>
+              <option>Python</option><option>JavaScript</option><option>TypeScript</option>
+              <option>Go</option><option>Rust</option><option>Java</option>
+              <option>C++</option><option>C</option><option>Swift</option><option>Kotlin</option>
+            </select>
+            <select id="sort" aria-label="Sort order">
+              <option value="created">Newest</option>
+              <option value="updated">Recently updated</option>
+              <option value="comments">Most discussed</option>
+              <option value="reactions">Most upvoted</option>
+            </select>
+            <button id="reset-btn" class="btn btn-ghost" type="button">
+              <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
   </header>
 
   <section class="hero">
@@ -52,56 +111,6 @@
         <input id="search" type="search" placeholder="Search issues… e.g. pagination, dark mode, refactor"
                autocomplete="off" spellcheck="false" aria-label="Search issues" />
         <kbd class="search-hint">/</kbd>
-      </div>
-
-      <div class="controls">
-        <div class="control-group" role="group" aria-label="Repository scope">
-          <span class="control-label">Scope</span>
-          <div class="chips" id="scope-chips">
-            <button class="chip chip-scope" data-scope="top" type="button">Top 100 active</button>
-            <button class="chip chip-scope" data-scope="all" type="button">All of GitHub</button>
-          </div>
-        </div>
-
-        <div class="control-group" role="group" aria-label="Labels">
-          <span class="control-label">Labels</span>
-          <div class="chips" id="label-chips">
-            <button class="chip chip-label" data-label="good first issue" type="button">good first issue</button>
-            <button class="chip chip-label" data-label="help wanted" type="button">help wanted</button>
-            <button class="chip chip-label" data-label="bug" type="button">bug</button>
-            <button class="chip chip-label" data-label="documentation" type="button">documentation</button>
-            <button class="chip chip-label" data-label="enhancement" type="button">enhancement</button>
-          </div>
-        </div>
-
-        <div class="control-group selects">
-          <span class="control-label">Filters</span>
-          <select id="age" aria-label="Maximum issue age" title="Only show issues created within this window">
-            <option value="7">Past week</option>
-            <option value="14">Past 2 weeks</option>
-            <option value="30">Past month</option>
-            <option value="61">Past 2 months</option>
-            <option value="182">Past 6 months</option>
-            <option value="365">Past year</option>
-            <option value="">Any time</option>
-          </select>
-          <select id="language" aria-label="Language">
-            <option value="">Any language</option>
-            <option>Python</option><option>JavaScript</option><option>TypeScript</option>
-            <option>Go</option><option>Rust</option><option>Java</option>
-            <option>C++</option><option>C</option><option>Swift</option><option>Kotlin</option>
-          </select>
-          <select id="sort" aria-label="Sort order">
-            <option value="created">Newest</option>
-            <option value="updated">Recently updated</option>
-            <option value="comments">Most discussed</option>
-            <option value="reactions">Most upvoted</option>
-          </select>
-          <button id="reset-btn" class="btn btn-ghost" type="button">
-            <svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            Reset
-          </button>
-        </div>
       </div>
     </div>
   </section>

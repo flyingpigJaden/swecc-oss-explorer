@@ -190,9 +190,26 @@ a:hover { opacity: 0.7; transition: 0.2s; }
   background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
+/* ---------- controls panel (lives in the sticky header) ---------- */
+
+.controls-panel {
+  border-top: 1px solid var(--hairline);
+  padding: 0.85rem 0 1rem;
+}
+.controls-panel .controls { gap: 10px; }
+
+.menu-btn { display: none; padding: 0.45rem; }
+.icon-close { display: none; }
+body.menu-open .icon-close { display: inline-block; }
+body.menu-open .icon-menu { display: none; }
+
+@keyframes menuSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
 /* ---------- hero & controls ---------- */
 
-.hero { padding: clamp(3rem, 7vw, 5.5rem) 0 28px; }
+.hero { padding: clamp(2rem, 4vw, 3.25rem) 0 28px; }
 .hero h1 {
   font-family: var(--font-hero);
   font-weight: 800;
@@ -438,9 +455,19 @@ dialog input {
 .btn, .chip, select, #search { touch-action: manipulation; }
 
 @media (max-width: 768px) { /* tokens.media.max768 */
-  .hero { padding-top: 2rem; }
+  .hero { padding-top: 1.75rem; }
   .control-label { min-width: 100%; }
   .grid { grid-template-columns: 1fr; }
+
+  /* Hamburger menu: filters collapse into a dropdown under the header. */
+  .menu-btn { display: inline-flex; }
+  .controls-panel { display: none; }
+  body.menu-open .controls-panel {
+    display: block;
+    animation: menuSlide 0.2s var(--ease-out);
+  }
+  .controls-panel .control-group { padding: 0.35rem 0; }
+
   .header-inner {
     height: auto;
     min-height: 3.5rem;
@@ -452,6 +479,11 @@ dialog input {
   .header-actions { margin-left: auto; }
   .meta-row { flex-direction: column; gap: 2px; align-items: flex-start; }
   .card-footer { flex-wrap: wrap; row-gap: 6px; }
+}
+
+@media (max-width: 480px) {
+  .brand-sub { display: none; }
+  .github-text { display: none; } /* icon-only GitHub button on tiny screens */
 }
 
 /* Comfortable touch targets on phones/tablets (Apple HIG: 44px). */
